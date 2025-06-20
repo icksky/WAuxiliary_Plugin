@@ -15,8 +15,6 @@ Map msgListMap = new HashMap();
 String deepseekApiKey = "sk-你的密钥";
 // 私聊触发关键词（可留空，空数组时允许所有私聊）
 String[] privateTriggerWords = {}; // 关键词触发，如不填则无限制{"你好","在吗"}
-// **新增：来源ID排除列表（精确匹配，支持私聊/群聊用户ID）**
-String[] excludedIds = {}; // 填写需要排除的用户ID
 // 违禁词列表（不区分大小写，包含即拦截）
 String[] forbiddenWords = {}; // 可自定义违禁词
 
@@ -40,7 +38,7 @@ void addSystemMsg(String talkerId, String content) {
         if ("system".equals(msg.get("role"))) {
             // 替换已有的系统消息
             msg.put("content", content);
-            log("更新了角色设定" + talkerId);
+            toast("更新了角色设定");
             systemMsgFound = true;
             break;
         }
@@ -52,7 +50,7 @@ void addSystemMsg(String talkerId, String content) {
         systemMsg.put("role", "system");
         systemMsg.put("content", content);
         userMsgList.add(systemMsg);
-        log("初始化角色设定: " + talkerId);
+        toast("初始化角色设定");
     }
 }
 
@@ -155,35 +153,61 @@ void cleanupInactiveSessions(String talkerId) {
     msgListMap.remove(talkerId);
 }
 
-boolean onLongClickSendBtn(String text) {
-    String talkerId = getTargetTalker();
+boolean onHandleCommand(String text, String talkerId, boolean isLongClick) {
     if (text.equals("切换模型")) {
         currentModel = (currentModel.equals(MODEL_REASONER)) ? MODEL_CHAT : MODEL_REASONER;
-        return true; // 消耗事件，确保模型切换生效
+        isLongClick ? toast(currentModel) : sendText(talkerId, currentModel);
+        return true;
     }
 
     if (text.equals("当前模型")) {
-        sendText(talkerId, currentModel);
+        isLongClick ? toast(currentModel) : sendText(talkerId, currentModel);
         return true;
     }
 
     if (text.startsWith("角色设定: ")) {
         addSystemMsg(talkerId, text.replace("角色设定: ", ""));
+        if (!isLongClick) {
+            sendText(talkerId, "角色设定成功");
+        }
         return true;
     }
 
     if (text.equals("重置")) {
         cleanupInactiveSessions(talkerId);
+        if (!isLongClick) {
+            sendText(talkerId, "已重置");
+        }
         return true;
     }
 
     return false;
 }
 
+boolean onLongClickSendBtn(String text) {
+    return onHandleCommand(text, getTargetTalker(), true);
+}
+
 // 消息处理主入口
 void onHandleMsg(Object msgInfoBean) {
     // **新增：来源ID排除判断（优先级最高，所有消息先过滤）**
     String talkerId = msgInfoBean.getTalker(); // 获取消息来源ID（需根据框架实际API调整，此处假设talker为用户ID）
+    String content = msgInfoBean.getContent();
+
+    if (msgInfoBean.isAtMe()) {
+        // 使用通用正则表达式移除所有 @提及
+        content = content
+            .replaceAll("@[^\\s\\u2005]+\\s*", "") // 移除 @提及及后续空格
+            .replaceAll("^\\s+|\\s+$", "")
+            .replaceAll("\\s+", " ");
+    }
+
+    // 处理消息指令
+    if (msgInfoBean.isText()) {
+        if (onHandleCommand(content, talkerId, false)) {
+            return;
+        }
+    }
 
     // 未设定角色直接跳过
     if (msgListMap.get(talkerId) == null) {
@@ -195,7 +219,6 @@ void onHandleMsg(Object msgInfoBean) {
         return;
     }
 
-    String content = msgInfoBean.getContent();
 
     // 群聊消息处理
     if (msgInfoBean.isGroupChat()) {
@@ -203,21 +226,12 @@ void onHandleMsg(Object msgInfoBean) {
             return;
         }
 
-        String talker = msgInfoBean.getTalker(); // 群聊中talker为群成员ID
-
-        // 使用通用正则表达式移除所有 @提及
-        String processedContent = content
-            .replaceAll("(^|\\s+)@[^\\s\\u2005]+", "") // 匹配并移除 @+任意非空字符
-            .replaceAll("^\\s+|\\s+$", "")             // 去除首尾空格
-            .replaceAll("\\s+", " ");                  // 合并中间多个空格为一个
-
-        sendDeepSeekResp(talker, processedContent);
+        sendDeepSeekResp(talkerId, content);
     }
     // 私聊消息处理（含违禁词+关键词判断）
     else {
         if (msgInfoBean.isText()) {
             String userContent = content.trim().toLowerCase(); // 转小写统一校验
-            String talker = msgInfoBean.getTalker(); // 私聊中talker为对方用户ID
 
             // 第一步：违禁词判断
             if (hasForbiddenWord(userContent)) {
@@ -241,7 +255,7 @@ void onHandleMsg(Object msgInfoBean) {
                 return;
             }
 
-            sendDeepSeekResp(talker, userContent);
+            sendDeepSeekResp(talkerId, content);
         }
     }
 }
@@ -254,4 +268,8 @@ boolean hasForbiddenWord(String content) {
         }
     }
     return false;
+}
+
+static {
+    log("DeepSeek 初始化");
 }
