@@ -16,28 +16,31 @@ void onHandleMsg(Object msgInfoBean) {
             if (emojis.length == 2) {
                 String emoji1 = emojis[0].trim();
                 String emoji2 = emojis[1].trim();
-                get("https://api.317ak.com/API/yljk/emo/emo.php?emoji1=" + emoji1 + "&emoji2=" + emoji2, null, new PluginCallBack.HttpCallback() {
+                String api = "https://api.317ak.com/API/yljk/emo/emo.php?emoji1=" + emoji1 + "&emoji2=" + emoji2;
+                get(api, null, new PluginCallBack.HttpCallback() {
                     public void onSuccess(int respCode, String respContent) {
                         JSONObject jsonObject = JSON.parseObject(respContent);
                         int code = JSONPath.eval(jsonObject, "$.code");
                         if (code == 1) {
                             String url = JSONPath.eval(jsonObject, "$.data.url");
-                            download(url, pluginDir + "/emoji.png", null, new PluginCallBack.DownloadCallback() {
+                            String path = cacheDir + "/emoji.png";
+                            download(url, path, null, new PluginCallBack.DownloadCallback() {
                                 public void onSuccess(File file) {
-                                    sendEmoji(getTargetTalker(), file.getAbsolutePath());
+                                    sendEmoji(talker, file.getAbsolutePath());
+                                    file.delete();
                                 }
 
                                 public void onError(Exception e) {
-                                    sendText(getTargetTalker(), "[倾梦API]下载异常:" + e.getMessage());
+                                    sendText(talker, "[倾梦API]下载异常:" + e.getMessage());
                                 }
                             });
                         } else {
-                            sendText(getTargetTalker(), "[倾梦API]生成失败:" + JSONPath.eval(jsonObject, "$.text"));
+                            sendText(talker, "[倾梦API]生成失败:" + JSONPath.eval(jsonObject, "$.text"));
                         }
                     }
 
                     public void onError(Exception e) {
-                        sendText(getTargetTalker(), "[倾梦API]生成异常:" + e.getMessage());
+                        sendText(talker, "[倾梦API]生成异常:" + e.getMessage());
                     }
                 });
             }

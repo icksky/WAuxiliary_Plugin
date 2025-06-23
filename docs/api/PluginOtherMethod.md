@@ -1,7 +1,7 @@
 # 其他方法
 
 ::: warning 警告
-本文档适用于 WAuxiliary v1.2.2.r623.655c448 版本
+本文档适用于 WAuxiliary v1.2.3.r722.c2ba115 版本
 :::
 
 ## 导入
@@ -32,4 +32,12 @@ Activity getTopActivity();
 
 ```java
 void uploadDeviceStep(long step);
+```
+
+## 获取头像链接
+
+```java
+void getAvatarUrl(String username);
+
+void getAvatarUrl(String username, boolean isBigHeadImg);
 ```

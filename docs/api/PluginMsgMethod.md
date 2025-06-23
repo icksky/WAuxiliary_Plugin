@@ -1,7 +1,7 @@
 # 消息方法
 
 ::: warning 警告
-本文档适用于 WAuxiliary v1.2.2.r623.655c448 版本
+本文档适用于 WAuxiliary v1.2.3.r722.c2ba115 版本
 :::
 
 ## 发送文本消息
@@ -14,13 +14,22 @@ void sendText(String talker, String content);
 
 ```java
 void sendVoice(String talker, String sendPath);
+
+void sendVoice(String talker, String sendPath, int voiceLength);
 ```
 
 ## 发送图片消息
 
 ```java
 void sendImage(String talker, String sendPath);
+
 void sendImage(String talker, String sendPath, String appId);
+```
+
+## 发送视频消息
+
+```java
+void sendVideo(String talker, String sendPath);
 ```
 
 ## 发送表情消息
@@ -45,6 +54,7 @@ void sendShareCard(String talker, String wxid);
 
 ```java
 void sendLocation(String talker, String poiName, String label, String x, String y, String scale);
+
 void sendLocation(String talker, JSONObject jsonObj);
 ```
 
@@ -64,6 +74,7 @@ void sendTextCard(String talker, String text, String appId);
 
 ```java
 void sendMusicCard(String talker, String title, String description, String playUrl, String infoUrl, String appId);
+
 void sendMusicCard(String talker, JSONObject jsonObj);
 ```
 
@@ -71,6 +82,7 @@ void sendMusicCard(String talker, JSONObject jsonObj);
 
 ```java
 void sendWebpageCard(String talker, String title, String description, String webpageUrl, String appId);
+
 void sendWebpageCard(String talker, JSONObject jsonObj);
 ```
 

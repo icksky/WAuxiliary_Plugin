@@ -1,16 +1,19 @@
 # 全局变量
 
 ::: warning 警告
-本文档适用于 WAuxiliary v1.2.2.r623.655c448 版本
+本文档适用于 WAuxiliary v1.2.3.r722.c2ba115 版本
 :::
 
 ## 变量说明
 
 - `context`  
-  插件上下文对象
+  上下文对象
+
+- `cacheDir`  
+  缓存路径
 
 - `pluginDir`  
-  插件的目录路径
+  插件路径
 
 - `pluginId`  
-  插件的唯一标识
+  插件标识

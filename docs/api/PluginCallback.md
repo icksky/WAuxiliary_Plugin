@@ -1,7 +1,7 @@
 # 回调方法
 
 ::: warning 警告
-本文档适用于 WAuxiliary v1.2.2.r623.655c448 版本
+本文档适用于 WAuxiliary v1.2.3.r722.c2ba115 版本
 :::
 
 ## 监听收到消息
@@ -20,4 +20,16 @@ boolean onLongClickSendBtn(String text);
 
 ```java
 void onMemberChange(String type, String groupWxid, String userWxid, String userName);
+```
+
+## 监听好友申请
+
+```java
+void onNewFriend(String wxid, String ticket, int scene);
+```
+
+## 自定义头像路径
+
+```java
+String onGetAvatarPath(String wxid);
 ```

@@ -4,13 +4,16 @@ import java.io.File;
 import me.hd.wauxv.plugin.api.callback.PluginCallBack;
 
 void sendToday(String talker) {
-    download("https://xiaoapi.cn/API/lssdjt_pic.php", pluginDir + "/image.png", null, new PluginCallBack.DownloadCallback() {
+    String api = "https://xiaoapi.cn/API/lssdjt_pic.php";
+    String path = cacheDir + "/image.png";
+    download(api, path, null, new PluginCallBack.DownloadCallback() {
         public void onSuccess(File file) {
-            sendImage(getTargetTalker(), file.getAbsolutePath());
+            sendImage(talker, file.getAbsolutePath());
+            file.delete();
         }
 
         public void onError(Exception e) {
-            sendText(getTargetTalker(), "[慕名API]下载异常:" + e.getMessage());
+            sendText(talker, "[慕名API]下载异常:" + e.getMessage());
         }
     });
 }

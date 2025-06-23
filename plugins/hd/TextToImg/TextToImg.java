@@ -43,9 +43,11 @@ void sendTextImg(String title, String subTitle) {
     paint.setColor(Color.BLACK);
     canvas.drawText(subTitle, padding + titleWidth * 1.15f, yOffset, paint);
     try {
-        FileOutputStream out = new FileOutputStream(pluginDir + "/image.png");
+        String path = cacheDir + "/image.png";
+        FileOutputStream out = new FileOutputStream(path);
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-        sendImage(getTargetTalker(), pluginDir + "/image.png", "wxe3ad19e142df87b3");
+        sendImage(getTargetTalker(), path, "wxe3ad19e142df87b3");
+        new File(path).delete();
         bitmap.recycle();
     } catch (IOException e) {
     }
