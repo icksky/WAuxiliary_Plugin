@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import me.hd.wauxv.plugin.api.callback.PluginCallBack;
 
 boolean isRunning = false;
+ServerSocket serverSocket;
 int SERVER_PORT = 13333;
 
 void handleClient(java.net.Socket socket) throws IOException {
@@ -114,7 +115,7 @@ void start(int port) {
     new Thread(new Runnable() {
         public void run() {
             try {
-                ServerSocket serverSocket = new java.net.ServerSocket(port);
+                serverSocket = new java.net.ServerSocket(port);
                 isRunning = true;
                 log("简易 HTTP Server started at port " + port);
 
@@ -123,10 +124,29 @@ void start(int port) {
                     handleClient(clientSocket);
                 }
             } catch (IOException e) {
-                log("HTTP Server 启动失败: " + e.getMessage());
+                String message = e.getMessage();
+                if (message.contains("Address already in use")) {
+                    // 关闭并重启服务
+                    restart();
+                    // 关闭 port 进程
+                    PluginCallBack.call("kill", "port " + port);
+                }
+                log("HTTP Server 启动失败: " + message);
             }
         }
     }).start();
+}
+
+void restart() {
+    isRunning = false;
+    log("关闭旧服务");
+    try {
+        serverSocket.close();
+    } catch (IOException e) {
+        log("关闭失败: " + e.getMessage());
+    }
+    log("重启服务");
+    start(SERVER_PORT);
 }
 
 void startHttpServer() {
